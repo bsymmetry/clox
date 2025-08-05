@@ -89,5 +89,5 @@ InterpretResult interpret(const char* source) {
 	InterpretResult result = run();
 
 	freeChunk(&chunk);
-	retrun result;
+	return result;
 }

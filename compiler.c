@@ -25,6 +25,7 @@ typedef enum {
 	PREC_COMPARISON,  // < > <= >=
 	PREC_TERM,        // + -
 	PREC_FACTOR,      // * /
+	PREC_UNARY,       // ! -
 	PREC_CALL,        // . ()
 	PREC_PRIMARY
 } Precedence;
@@ -54,7 +55,7 @@ static void errorAt(Token* token, const char* message) {
 	} else if (token->type == TOKEN_ERROR) {
 		// Nothing
 	} else {
-		fprintf(stderr, " at '%.*s'", token->lenght, token->start);
+		fprintf(stderr, " at '%.*s'", token->length, token->start);
 	}
 
 	fprintf(stderr, ": %s\n", message);
@@ -65,7 +66,7 @@ static void error(const char* message) {
 	errorAt(&parser.previous, message);
 }
 
-static void errorAtCurrent(const char* meesage) {
+static void errorAtCurrent(const char* message) {
 	errorAt(&parser.current, message);
 }
 
@@ -136,9 +137,9 @@ static void binary() {
 
 	switch (operatorType) {
 		case TOKEN_PLUS:  emitByte(OP_ADD); break;
-		case TOKEN_MINUS: emitByte(OP_SUBSTRACT); break;
+		case TOKEN_MINUS: emitByte(OP_SUBTRACT); break;
 		case TOKEN_STAR:  emitByte(OP_MULTIPLY); break;
-		case TOKEN_SLASH: emitBYTE(OP_DIVIDE); break;
+		case TOKEN_SLASH: emitByte(OP_DIVIDE); break;
 		default: return; // Unreachable
 	}
 }
@@ -175,7 +176,7 @@ ParseRule rules[] = {
 	[TOKEN_DOT]           = {NULL,     NULL,   PREC_NONE},
 	[TOKEN_MINUS]         = {unary,    binary, PREC_TERM},
 	[TOKEN_PLUS]          = {NULL,     binary, PREC_TERM},
-	[TOKEN_SEMICONLIN]    = {NULL,     NULL,   PREC_NONE},
+	[TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
 	[TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
 	[TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
 	[TOKEN_BANG]          = {NULL,     NULL,   PREC_NONE},
@@ -202,7 +203,7 @@ ParseRule rules[] = {
 	[TOKEN_RETURN]        = {NULL,     NULL,   PREC_NONE},
 	[TOKEN_SUPER]         = {NULL,     NULL,   PREC_NONE},
 	[TOKEN_THIS]          = {NULL,     NULL,   PREC_NONE},
-	[TOKEN_TURE]          = {NULL,     NULL,   PREC_NONE},
+	[TOKEN_TRUE]          = {NULL,     NULL,   PREC_NONE},
 	[TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
 	[TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
 	[TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
@@ -211,7 +212,7 @@ ParseRule rules[] = {
 
 static void parsePrecedence(Precedence precedence) {
 	advance();
-	ParseFN prefixRule = getRule(parser.previous.type)->prefix;
+	ParseFn prefixRule = getRule(parser.previous.type)->prefix;
 	if (prefixRule == NULL) {
 		error("Expect expression.");
 		return;
@@ -226,7 +227,7 @@ static void parsePrecedence(Precedence precedence) {
 	}
 }
 
-static ParseRule* getRule(TokenTYpe type) {
+static ParseRule* getRule(TokenType type) {
 	return &rules[type];
 }
 

@@ -109,7 +109,7 @@ static TokenType checkKeyword(int start, int length,
 }
 
 static TokenType identifierType() {
-	swtch (scanner.start[0]){
+	switch (scanner.start[0]){
 		case 'a': return checkKeyword(1, 2, "nd", TOKEN_AND);
 		case 'c': return checkKeyword(1, 4, "lass", TOKEN_CLASS);
 		case 'e': return checkKeyword(1, 3, "lse", TOKEN_ELSE);
